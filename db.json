@@ -1,0 +1,74 @@
+{
+  "tasks": [
+    {
+      "id": "1",
+      "title": "Design homepage",
+      "description": "Create initial layout and hero section",
+      "status": "Done",
+      "createdAt": "2025-10-27T10:00:00.000Z"
+    },
+    {
+      "id": "2",
+      "title": "API contract",
+      "description": "Draft simple tasks API",
+      "status": "To Do",
+      "createdAt": "2025-10-27T12:00:00.000Z"
+    },
+    {
+      "id": "3",
+      "title": "Deploy preview",
+      "description": "",
+      "status": "Done",
+      "createdAt": "2025-10-26T09:00:00.000Z"
+    },
+    {
+      "id": "da5b",
+      "title": "intense",
+      "description": "test",
+      "status": "To Do",
+      "createdAt": "2025-10-28T09:58:35.909Z"
+    },
+    {
+      "id": "34c9",
+      "title": "hey",
+      "description": "test",
+      "status": "To Do",
+      "createdAt": "2025-10-28T12:11:47.757Z"
+    },
+    {
+      "id": "62fd",
+      "title": "new title",
+      "description": "yoo",
+      "status": "In Progress",
+      "createdAt": "2025-10-28T16:22:59.355Z"
+    },
+    {
+      "id": "448f",
+      "title": "gg",
+      "description": "new des",
+      "status": "In Progress",
+      "createdAt": "2025-10-29T06:05:05.101Z"
+    },
+    {
+      "id": "b69b",
+      "title": "new gg",
+      "description": "hey",
+      "status": "In Progress",
+      "createdAt": "2025-10-29T06:56:51.895Z"
+    },
+    {
+      "id": "2dd1",
+      "title": "test",
+      "description": "test description",
+      "status": "In Progress",
+      "createdAt": "2025-10-29T09:43:00.963Z"
+    },
+    {
+      "id": "a0fe",
+      "title": "check",
+      "description": "check des",
+      "status": "Done",
+      "createdAt": "2025-10-29T11:10:11.377Z"
+    }
+  ]
+}
