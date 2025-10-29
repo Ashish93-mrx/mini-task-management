@@ -34,7 +34,10 @@ export default function App() {
     const [error, setError] = useState<string | null>(null);
     const [activeId, setActiveId] = useState<string | null>(null);
 
-    const sensors = useSensors(useSensor(PointerSensor));
+    // Add activationConstraint to avoid accidental drags (starts only after small move)
+    const sensors = useSensors(
+        useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
+    );
 
     useEffect(() => {
         load();
@@ -62,19 +65,11 @@ export default function App() {
         };
     }, [tasks]);
 
-    // memoize create handler
+    // memoized create handler
     const handleCreate = useCallback(
-        async (payload: {
-            title: string;
-            description?: string;
-            status: TaskStatus;
-        }) => {
+        async (payload: { title: string; description?: string; status: TaskStatus }) => {
             try {
-                const temp: Task = {
-                    id: Date.now(),
-                    ...payload,
-                    createdAt: new Date().toISOString(),
-                };
+                const temp: Task = { id: Date.now(), ...payload, createdAt: new Date().toISOString() };
                 setTasks((prev) => [temp, ...prev]);
                 const created = await createTask(payload as any);
                 setTasks((prev) => prev.map((t) => (t.id === temp.id ? created : t)));
@@ -87,7 +82,7 @@ export default function App() {
         []
     );
 
-    // Stable callback for updating status (uses functional update to avoid stale closure)
+    // Stable callback for updating status (functional update avoids stale closures)
     const handleChangeStatus = useCallback(async (id: string | number, newStatus: TaskStatus) => {
         const idStr = String(id);
         setTasks((prev) => prev.map((t) => (String(t.id) === idStr ? { ...t, status: newStatus } : t)));
@@ -96,7 +91,6 @@ export default function App() {
         } catch (err) {
             console.error(err);
             setError("Failed to update task");
-            // Fallback: reload data to ensure consistency
             load();
         }
     }, []);
@@ -106,6 +100,13 @@ export default function App() {
         try {
             document.body.style.cursor = "grabbing";
         } catch { }
+    }
+
+    function handleDragCancel() {
+        try {
+            document.body.style.cursor = "";
+        } catch { }
+        setActiveId(null);
     }
 
     function handleDragEnd(event: DragEndEvent) {
@@ -121,6 +122,7 @@ export default function App() {
         const activeIdStr = String(active.id);
         const overIdStr = String(over.id);
 
+        // if dropped on a column header area (column ids are "To Do", "In Progress", "Done")
         if ((COLUMNS as readonly string[]).includes(overIdStr)) {
             handleChangeStatus(activeIdStr, overIdStr as TaskStatus);
             setActiveId(null);
@@ -134,6 +136,7 @@ export default function App() {
             return;
         }
 
+        // reorder within same column
         if (activeTask.status === overTask.status) {
             const column = activeTask.status;
             const colTasks = tasksByStatus[column];
@@ -144,12 +147,9 @@ export default function App() {
                 return;
             }
             const reordered = arrayMove(colTasks, oldIndex, newIndex);
-
-            setTasks((prev) => [
-                ...prev.filter((t) => t.status !== column),
-                ...reordered,
-            ]);
+            setTasks((prev) => [...prev.filter((t) => t.status !== column), ...reordered]);
         } else {
+            // moved to a task inside another column -> update to that column
             handleChangeStatus(activeIdStr, overTask.status);
         }
 
@@ -162,20 +162,26 @@ export default function App() {
         <div className="min-h-screen bg-gray-50 p-6">
             <Toaster position="top-right" />
             <div className="max-w-6xl mx-auto">
-                <div className="flex items-center justify-between mb-6">
-                    <h1 className="text-2xl font-semibold">Mini Task Management Dashboard</h1>
-                    <Button onClick={() => setShowNew(true)} variant="primary">
-                        Add New Task
-                    </Button>
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
+                    <h1 className="text-xl sm:text-2xl font-semibold text-gray-800 text-center sm:text-left">
+                        Mini Task Management Dashboard
+                    </h1>
+                    <div className="flex justify-center sm:justify-end">
+                        <Button onClick={() => setShowNew(true)} variant="primary" className="w-full sm:w-auto">
+                            Add New Task
+                        </Button>
+                    </div>
                 </div>
 
-                {loading ? (
-                    <div className="text-gray-500">Loading tasks…</div>
-                ) : error ? (
-                    <div className="text-red-600">{error}</div>
-                ) : null}
+                {loading ? <div className="text-gray-500">Loading tasks…</div> : error ? <div className="text-red-600">{error}</div> : null}
 
-                <DndContext sensors={sensors} collisionDetection={closestCenter} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
+                <DndContext
+                    sensors={sensors}
+                    collisionDetection={closestCenter}
+                    onDragStart={handleDragStart}
+                    onDragEnd={handleDragEnd}
+                    onDragCancel={handleDragCancel}
+                >
                     <Suspense
                         fallback={
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -212,7 +218,8 @@ export default function App() {
 
                     <DragOverlay dropAnimation={{ duration: 160 }}>
                         {activeTask ? (
-                            <div className="w-full cursor-grabbing">
+                            // make overlay non-interactive so it doesn't capture pointers/clicks
+                            <div className="w-full cursor-grabbing pointer-events-none">
                                 <TaskCard task={activeTask} onChangeStatus={() => { }} isPreview />
                             </div>
                         ) : null}
