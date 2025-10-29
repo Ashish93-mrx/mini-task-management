@@ -22,7 +22,7 @@ function TaskCard({ task, onChangeStatus, isPreview = false }: Props) {
             <div className="flex items-center justify-between mt-3">
                 <div className="flex items-center gap-2">
                     <Badge size="sm" status={task.status}>
-                    {task.status}
+                        {task.status}
                     </Badge>
                 </div>
 
